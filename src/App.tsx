@@ -43,6 +43,27 @@ const InstagramIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   </svg>
 );
 
+const GoogleIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24">
+    <path
+      fill="#EA4335"
+      d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.27 0 3.18 2.69 1.17 6.64l4.096 3.125z"
+    />
+    <path
+      fill="#34A853"
+      d="M16.04 15.313c-1.07.727-2.457 1.16-4.04 1.16a7.077 7.077 0 0 1-6.733-4.856L1.17 14.743C3.18 18.692 7.27 21.382 12 21.382c3.082 0 5.864-1.018 7.955-2.773l-3.914-3.296z"
+    />
+    <path
+      fill="#4285F4"
+      d="M23.49 12.275c0-.627-.064-1.3-.182-1.91H12v3.627h6.455a5.527 5.527 0 0 1-2.418 3.618l3.914 3.296c2.29-2.11 3.54-5.21 3.54-8.63z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.266 12.275a7.03 7.03 0 0 1 0-2.51L1.17 6.64a11.972 11.972 0 0 0 0 10.728l4.096-3.125z"
+    />
+  </svg>
+);
+
 // ==========================================
 // TYPES & CONTEXTS
 // ==========================================
@@ -96,6 +117,30 @@ const Counter: React.FC<{ value: number; duration?: number; suffix?: string }> =
 
   return <span ref={ref}>{count}{suffix}</span>;
 };
+
+// Google Reviews Data
+const googleReviews = [
+  {
+    id: "rev-1",
+    name: "Josue Olivas",
+    role: "Local Guide · 25 reviews",
+    rating: 5,
+    time: "a month ago",
+    text: "This hall is truly a 5 star rating from the planing till the day of the event every step the owners are always there and willing to help me as far the Aesthetic: The space is modern and versatile, designed to be easily customized for specific themes.\n\nDesign Services: They offer professional planning and custom decor, including specialty balloon backdrops and styled tablescapes.",
+    avatarBg: "bg-brand-primary text-white font-serif",
+    avatarInitials: "JO"
+  },
+  {
+    id: "rev-2",
+    name: "George K",
+    role: "Local Guide · 28 reviews · 5 photos",
+    rating: 5,
+    time: "6 days ago",
+    text: "I had an amazing experience at this party hall! The venue was clean, spacious, and beautifully maintained. Everything was set up perfectly, and the staff was friendly, professional, and very helpful throughout the entire event. The space was perfect for our guests, and everyone had a wonderful time. If you're looking for a great place to celebrate a birthday, baby shower, graduation, or any special occasion, I highly recommend this party hall. I will definitely be booking again in the future! ⭐⭐⭐⭐⭐",
+    avatarBg: "bg-purple-600 text-white font-serif",
+    avatarInitials: "GK"
+  }
+];
 
 // ==========================================
 // PRIMARY APP COMPONENT
@@ -1222,97 +1267,69 @@ export default function App() {
             <div className="inline-flex items-center gap-2 bg-brand-secondary/10 px-3 py-1 rounded-full text-brand-secondary font-semibold text-xs tracking-wider uppercase mb-3">
               <span>Client Stories</span>
             </div>
-            <h2 className="font-serif text-[clamp(2rem,4vw,3rem)] font-bold text-brand-primary leading-tight">
-              Highly Recommended Venue
+            <h2 className="font-serif text-[clamp(2rem,4vw,3rem)] font-bold text-brand-primary leading-tight mb-4">
+              Loved by Our Guests
             </h2>
+            <div className="flex justify-center items-center gap-2 mt-2">
+              <div className="flex text-amber-500 gap-0.5">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />)}
+              </div>
+              <span className="text-sm font-semibold text-brand-charcoal">
+                5.0 Stars (Google Reviews)
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            {/* Testimonial card 1 */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-8 border border-brand-primary/5 shadow-md flex flex-col justify-between text-left"
-              whileInView="visible"
-              initial="hidden"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={fadeIn}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex text-brand-secondary gap-1">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-brand-secondary" />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {googleReviews.map((review) => (
+              <motion.div
+                key={review.id}
+                whileHover={{ y: -6 }}
+                className="bg-white rounded-2xl p-8 border border-brand-primary/5 shadow-md flex flex-col justify-between text-left relative"
+                whileInView="visible"
+                initial="hidden"
+                viewport={{ once: true, margin: "-80px" }}
+                variants={fadeIn}
+              >
+                <div className="flex flex-col gap-4">
+                  {/* Google Logo at Top Right */}
+                  <div className="absolute top-6 right-6">
+                    <GoogleIcon className="w-5 h-5 opacity-90" />
+                  </div>
+                  
+                  <div className="flex text-amber-500 gap-0.5">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    ))}
+                  </div>
+                  
+                  <p className="text-sm text-brand-charcoal/90 leading-relaxed font-light whitespace-pre-line">
+                    "{review.text}"
+                  </p>
                 </div>
-                <p className="text-sm text-brand-charcoal/80 leading-relaxed font-light italic">
-                  "We hosted our daughter's 1st birthday here, and it was perfect! The balloon decor they put together was beautiful. The space was extremely clean and spacious enough for all 60 of our guests. Recommended highly!"
-                </p>
-              </div>
-              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-brand-primary/5">
-                <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center font-serif font-bold text-brand-primary">
-                  M
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-brand-primary">Maria S.</h4>
-                  <p className="text-[10px] text-brand-charcoal/60">El Paso Resident</p>
-                </div>
-              </div>
-            </motion.div>
 
-            {/* Testimonial card 2 */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-8 border border-brand-primary/5 shadow-md flex flex-col justify-between text-left"
-              whileInView="visible"
-              initial="hidden"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={fadeIn}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex text-brand-secondary gap-1">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-brand-secondary" />)}
+                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-brand-primary/5">
+                  {/* Avatar Container with Local Guide gold star */}
+                  <div className="relative">
+                    <div className={`w-10 h-10 rounded-full ${review.avatarBg} flex items-center justify-center font-bold text-sm shadow-inner`}>
+                      {review.avatarInitials}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 text-white p-0.5 rounded-full border border-white flex items-center justify-center shadow-sm">
+                      <Star className="w-1.5 h-1.5 fill-white text-white" />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-bold text-brand-primary flex items-center gap-1.5">
+                      {review.name}
+                    </h4>
+                    <p className="text-[10px] text-brand-charcoal/70">
+                      {review.role} • <span className="text-brand-charcoal/50 font-normal">{review.time}</span>
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-brand-charcoal/80 leading-relaxed font-light italic">
-                  "R&K Party Hall was the ideal choice for my baby shower. The booking was direct, they accommodated my setup timing requests, and recommended table configurations. The guest tier package is very budget-friendly."
-                </p>
-              </div>
-              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-brand-primary/5">
-                <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center font-serif font-bold text-brand-primary">
-                  D
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-brand-primary">Diana V.</h4>
-                  <p className="text-[10px] text-brand-charcoal/60">El Paso Resident</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial card 3 */}
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-8 border border-brand-primary/5 shadow-md flex flex-col justify-between text-left"
-              whileInView="visible"
-              initial="hidden"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={fadeIn}
-            >
-              <div className="flex flex-col gap-4">
-                <div className="flex text-brand-secondary gap-1">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-brand-secondary" />)}
-                </div>
-                <p className="text-sm text-brand-charcoal/80 leading-relaxed font-light italic">
-                  "Great experience from start to finish. The owner was super responsive and helpful. The hall layout works wonderfully for family dinners or milestone anniversaries. Having the dessert tables set up was a huge help."
-                </p>
-              </div>
-              <div className="flex items-center gap-3 mt-6 pt-4 border-t border-brand-primary/5">
-                <div className="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center font-serif font-bold text-brand-primary">
-                  A
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-brand-primary">Albert C.</h4>
-                  <p className="text-[10px] text-brand-charcoal/60">Local Event Planner</p>
-                </div>
-              </div>
-            </motion.div>
-
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
