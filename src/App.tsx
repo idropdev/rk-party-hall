@@ -392,8 +392,9 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           {/* Logo Section */}
           <a href="#" className="flex items-center gap-2 group">
-            <span className="font-serif text-2xl sm:text-3xl font-bold text-brand-primary tracking-wide transition-all group-hover:opacity-85">
-              R&K <span className="font-sans font-light text-brand-secondary text-lg sm:text-xl">Party Hall</span>
+            <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-12 w-12 sm:h-14 sm:w-14 object-contain transition-all group-hover:opacity-85" />
+            <span className="font-serif text-lg sm:text-xl font-bold text-brand-primary tracking-wide transition-all group-hover:opacity-85 hidden xs:inline">
+              R&K <span className="font-sans font-light text-brand-secondary text-sm sm:text-base">Party Hall</span>
             </span>
           </a>
 
@@ -1470,9 +1471,12 @@ export default function App() {
             
             {/* Brand details col */}
             <div className="md:col-span-5 flex flex-col gap-4">
-              <span className="font-serif text-2xl font-bold tracking-wide text-white">
-                R&K <span className="font-sans font-light text-brand-secondary-light text-lg">Party Hall</span>
-              </span>
+              <div className="flex items-center gap-3">
+                <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-16 w-16 object-contain" />
+                <span className="font-serif text-2xl font-bold tracking-wide text-white">
+                  R&K <span className="font-sans font-light text-brand-secondary-light text-lg">Party Hall</span>
+                </span>
+              </div>
               <p className="text-xs text-white/70 max-w-sm leading-relaxed font-light">
                 Providing standard and fully-coordinated private event hall rentals in West El Paso, TX. Helping local families host and celebrate birthdays, baby showers, and receptions.
               </p>
