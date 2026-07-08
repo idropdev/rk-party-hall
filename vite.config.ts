@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    base: mode === 'production' ? '/rk-party-hall/' : '/',
+    base: './',
     plugins: [
       react(),
       tailwindcss(),
