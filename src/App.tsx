@@ -392,7 +392,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           {/* Logo Section */}
           <a href="#" className="flex items-center gap-2 group">
-            <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-12 w-12 sm:h-14 sm:w-14 object-contain transition-all group-hover:opacity-85" />
+            <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain transition-all group-hover:opacity-85" />
             <span className="font-serif text-lg sm:text-xl font-bold text-brand-primary tracking-wide transition-all group-hover:opacity-85 hidden xs:inline">
               R&K <span className="font-sans font-light text-brand-secondary text-sm sm:text-base">Party Hall</span>
             </span>
@@ -1472,7 +1472,7 @@ export default function App() {
             {/* Brand details col */}
             <div className="md:col-span-5 flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-16 w-16 object-contain" />
+                <img src="/rk-logo.png" alt="R&K Party Hall Logo" className="h-20 w-20 object-contain" />
                 <span className="font-serif text-2xl font-bold tracking-wide text-white">
                   R&K <span className="font-sans font-light text-brand-secondary-light text-lg">Party Hall</span>
                 </span>
