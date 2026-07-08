@@ -25,7 +25,6 @@ import {
   ArrowRight, 
   Star,
   ChevronRight,
-  ShieldCheck
 } from "lucide-react";
 
 // Custom SVG Icons for Brands
@@ -118,17 +117,29 @@ const Counter: React.FC<{ value: number; duration?: number; suffix?: string }> =
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-// Google Reviews Data
-const googleReviews = [
+interface GoogleReviewItem {
+  id: string;
+  name: string;
+  role: string;
+  rating: number;
+  time: string;
+  text: string;
+  avatarBg: string;
+  avatarInitials: string;
+  url?: string;
+}
+
+const fallbackReviews: GoogleReviewItem[] = [
   {
     id: "rev-1",
     name: "Josue Olivas",
     role: "Local Guide · 25 reviews",
     rating: 5,
     time: "a month ago",
-    text: "This hall is truly a 5 star rating from the planing till the day of the event every step the owners are always there and willing to help me as far the Aesthetic: The space is modern and versatile, designed to be easily customized for specific themes.\n\nDesign Services: They offer professional planning and custom decor, including specialty balloon backdrops and styled tablescapes.",
+    text: "This hall is truly a 5 star rating from the planning till the day of the event every step the owners are always there and willing to help me as far the Aesthetic: The space is modern and versatile, designed to be easily customized for specific themes.\n\nDesign Services: They offer professional planning and custom decor, including specialty balloon backdrops and styled tablescapes.",
     avatarBg: "bg-brand-primary text-white font-serif",
-    avatarInitials: "JO"
+    avatarInitials: "JO",
+    url: "https://www.google.com/maps/place/RK+Party+Hall/@31.8776014,-106.5928449,17z/data=!3m1!4b1!4m6!3m5!1s0x86ddf913831200f1:0x1903d3fdecca3cf!8m2!3d31.8776014!4d-106.5928449!16s%2Fg%2F11yp_4yfxg"
   },
   {
     id: "rev-2",
@@ -138,7 +149,8 @@ const googleReviews = [
     time: "6 days ago",
     text: "I had an amazing experience at this party hall! The venue was clean, spacious, and beautifully maintained. Everything was set up perfectly, and the staff was friendly, professional, and very helpful throughout the entire event. The space was perfect for our guests, and everyone had a wonderful time. If you're looking for a great place to celebrate a birthday, baby shower, graduation, or any special occasion, I highly recommend this party hall. I will definitely be booking again in the future! ⭐⭐⭐⭐⭐",
     avatarBg: "bg-purple-600 text-white font-serif",
-    avatarInitials: "GK"
+    avatarInitials: "GK",
+    url: "https://www.google.com/maps/place/RK+Party+Hall/@31.8776014,-106.5928449,17z/data=!3m1!4b1!4m6!3m5!1s0x86ddf913831200f1:0x1903d3fdecca3cf!8m2!3d31.8776014!4d-106.5928449!16s%2Fg%2F11yp_4yfxg"
   }
 ];
 
@@ -158,19 +170,10 @@ export default function App() {
   });
   
   const [activeTab, setActiveTab] = useState<"estimator" | "packages" | "gallery">("estimator");
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    date: "",
-    guestCount: "40",
-    eventType: "Birthday",
-    message: "",
-  });
 
   const shouldReduceMotion = useReducedMotion();
-  const contactFormRef = useRef<HTMLDivElement>(null);
+  const [reviews, setReviews] = useState<GoogleReviewItem[]>(fallbackReviews);
+  const [googleStats, setGoogleStats] = useState<{ rating: number; total: number } | null>(null);
 
   // Scroll handler for navigation opacity & blur
   const { scrollY } = useScroll();
@@ -209,43 +212,60 @@ export default function App() {
   };
 
   const handleInquiryFromEstimator = () => {
-    const summary = `Estimated Event: Guests: ${estimator.guests}, Hours: ${estimator.hours}. Addons: ${[
-      estimator.linens ? "Table Linens" : "",
-      estimator.sound ? "Sound/Light System" : "",
-      estimator.dessert ? "Dessert Station" : "",
-      estimator.coordinator ? "Coordinator" : "",
-    ].filter(Boolean).join(", ") || "None"}. Calculated Estimate: $${calculateTotal()}.`;
-    
-    setFormData((prev) => ({
-      ...prev,
-      guestCount: String(estimator.guests),
-      message: `Hi R&K, I would like to request an estimate callback based on the customized quote builder:\n\n${summary}`,
-    }));
-
-    contactFormRef.current?.scrollIntoView({ behavior: "smooth" });
+    const contactSection = document.getElementById("contact");
+    contactSection?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setFormData({
-        name: "",
-        phone: "",
-        email: "",
-        date: "",
-        guestCount: "40",
-        eventType: "Birthday",
-        message: "",
+    fetch('/api/reviews')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Unable to load Google reviews');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!isMounted) return;
+
+        if (data?.reviews?.length) {
+          const mappedReviews = data.reviews.slice(0, 6).map((review: any, index: number) => ({
+            id: `google-${index}`,
+            name: review.author_name || 'Google Reviewer',
+            role: 'Google Review',
+            rating: review.rating || 5,
+            time: review.relative_time_description || 'Recently reviewed',
+            text: review.text || 'Great experience!',
+            avatarBg: index % 2 === 0 ? 'bg-brand-primary text-white font-serif' : 'bg-purple-600 text-white font-serif',
+            avatarInitials: (review.author_name || 'GR')
+              .split(' ')
+              .slice(0, 2)
+              .map((part: string) => part[0])
+              .join('')
+              .toUpperCase(),
+            url: review.author_url || "https://www.google.com/maps/place/RK+Party+Hall/@31.8776014,-106.5928449,17z/data=!3m1!4b1!4m6!3m5!1s0x86ddf913831200f1:0x1903d3fdecca3cf!8m2!3d31.8776014!4d-106.5928449!16s%2Fg%2F11yp_4yfxg",
+          }));
+
+          setReviews(mappedReviews);
+        }
+
+        if (data?.rating) {
+          setGoogleStats({
+            rating: data.rating,
+            total: data.user_ratings_total || 0,
+          });
+        }
+      })
+      .catch((error) => {
+        if (!isMounted) return;
+        console.warn('Using fallback reviews:', error);
       });
-    }, 5000);
-  };
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Animation variants
   const staggerContainer = {
@@ -1187,11 +1207,7 @@ export default function App() {
                       
                       <button
                         onClick={() => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            message: `Hi R&K, I am highly interested in the "${pkg.name}" (${pkg.price}) standard package. Please contact me with availability options.`,
-                          }));
-                          contactFormRef.current?.scrollIntoView({ behavior: "smooth" });
+                          document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
                         }}
                         className="mt-8 w-full bg-white hover:bg-brand-primary border-2 border-brand-primary hover:text-white text-brand-primary py-3 rounded-full text-xs font-bold transition-all text-center"
                       >
@@ -1275,13 +1291,13 @@ export default function App() {
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />)}
               </div>
               <span className="text-sm font-semibold text-brand-charcoal">
-                5.0 Stars (Google Reviews)
+                {googleStats ? `${googleStats.rating.toFixed(1)} Stars · ${googleStats.total} Google Reviews` : '5.0 Stars (Google Reviews)'}
               </span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {googleReviews.map((review) => (
+            {reviews.map((review) => (
               <motion.div
                 key={review.id}
                 whileHover={{ y: -6 }}
@@ -1298,7 +1314,7 @@ export default function App() {
                   </div>
                   
                   <div className="flex text-amber-500 gap-0.5">
-                    {[...Array(review.rating)].map((_, i) => (
+                    {[...Array(review.rating || 5)].map((_, i) => (
                       <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
                     ))}
                   </div>
@@ -1308,28 +1324,58 @@ export default function App() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-brand-primary/5">
-                  {/* Avatar Container with Local Guide gold star */}
-                  <div className="relative">
-                    <div className={`w-10 h-10 rounded-full ${review.avatarBg} flex items-center justify-center font-bold text-sm shadow-inner`}>
-                      {review.avatarInitials}
+                <div className="flex flex-col gap-4 mt-6 pt-4 border-t border-brand-primary/5">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar Container with Local Guide gold star */}
+                    <div className="relative">
+                      <div className={`w-10 h-10 rounded-full ${review.avatarBg} flex items-center justify-center font-bold text-sm shadow-inner`}>
+                        {review.avatarInitials}
+                      </div>
+                      <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 text-white p-0.5 rounded-full border border-white flex items-center justify-center shadow-sm">
+                        <Star className="w-1.5 h-1.5 fill-white text-white" />
+                      </div>
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 text-white p-0.5 rounded-full border border-white flex items-center justify-center shadow-sm">
-                      <Star className="w-1.5 h-1.5 fill-white text-white" />
+                    
+                    <div>
+                      <h4 className="text-sm font-bold text-brand-primary flex items-center gap-1.5">
+                        {review.name}
+                      </h4>
+                      <p className="text-[10px] text-brand-charcoal/70">
+                        {review.role} • <span className="text-brand-charcoal/50 font-normal">{review.time}</span>
+                      </p>
                     </div>
                   </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-bold text-brand-primary flex items-center gap-1.5">
-                      {review.name}
-                    </h4>
-                    <p className="text-[10px] text-brand-charcoal/70">
-                      {review.role} • <span className="text-brand-charcoal/50 font-normal">{review.time}</span>
-                    </p>
-                  </div>
+
+                  {review.url && (
+                    <a
+                      href={review.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-brand-secondary hover:text-amber-700 transition-colors group"
+                    >
+                      View on Google
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                    </a>
+                  )}
                 </div>
               </motion.div>
             ))}
+          </div>
+
+          {/* Leave a Review CTA */}
+          <div className="flex justify-center mt-12">
+            <motion.a
+              href="https://search.google.com/local/writereview?placeid=0x86ddf913831200f1:0x1903d3fdecca3cf"
+              target="_blank"
+              rel="noreferrer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-brand-secondary text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:bg-amber-600 transition-all duration-300"
+            >
+              <Star className="w-5 h-5 fill-white text-white" />
+              <span>Leave a Review on Google</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.a>
           </div>
         </div>
       </section>
@@ -1343,7 +1389,7 @@ export default function App() {
             
             {/* Contact left info & map */}
             <motion.div 
-              className="lg:col-span-5 flex flex-col justify-between gap-8 text-left"
+              className="lg:col-span-12 flex flex-col justify-between gap-8 text-left"
               whileInView="visible"
               initial="hidden"
               viewport={{ once: true, margin: "-80px" }}
@@ -1411,146 +1457,6 @@ export default function App() {
 
             </motion.div>
 
-            {/* Contact Right Form */}
-            <motion.div 
-              ref={contactFormRef}
-              className="lg:col-span-7 bg-brand-bg border border-brand-primary/5 rounded-3xl p-6 sm:p-10 shadow-lg flex flex-col justify-center"
-              whileInView="visible"
-              initial="hidden"
-              viewport={{ once: true, margin: "-80px" }}
-              variants={scaleUp}
-            >
-              <h3 className="font-serif text-2xl font-bold text-brand-primary text-left mb-6">
-                Request Hall Availability
-              </h3>
-
-              {formSubmitted ? (
-                <motion.div 
-                  className="bg-brand-secondary/10 border border-brand-secondary/20 rounded-2xl p-8 text-center flex flex-col items-center gap-4"
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                >
-                  <div className="w-16 h-16 rounded-full bg-brand-secondary/20 flex items-center justify-center text-brand-secondary mb-2">
-                    <ShieldCheck className="w-8 h-8" />
-                  </div>
-                  <h4 className="font-serif text-xl font-bold text-brand-primary">Inquiry Sent Successfully!</h4>
-                  <p className="text-sm text-brand-charcoal/80 leading-relaxed font-light max-w-sm">
-                    Thank you, {formData.name}. We have received your booking inquiry for {formData.date || "your requested date"}. An event coordinator will reach out to you at {formData.phone} shortly.
-                  </p>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleFormSubmit} className="flex flex-col gap-5 text-left">
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Full Name *</label>
-                      <input 
-                        type="text" 
-                        name="name" 
-                        required 
-                        value={formData.name}
-                        onChange={handleFormChange}
-                        placeholder="e.g. Maria Gonzalez"
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Phone Number *</label>
-                      <input 
-                        type="tel" 
-                        name="phone" 
-                        required 
-                        value={formData.phone}
-                        onChange={handleFormChange}
-                        placeholder="e.g. (915) 555-0199"
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Email Address *</label>
-                      <input 
-                        type="email" 
-                        name="email" 
-                        required 
-                        value={formData.email}
-                        onChange={handleFormChange}
-                        placeholder="e.g. maria@gmail.com"
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Requested Event Date *</label>
-                      <input 
-                        type="date" 
-                        name="date" 
-                        required 
-                        value={formData.date}
-                        onChange={handleFormChange}
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Guest Count *</label>
-                      <select 
-                        name="guestCount" 
-                        value={formData.guestCount}
-                        onChange={handleFormChange}
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      >
-                        <option value="20">20 Guests or Less</option>
-                        <option value="40">21 - 40 Guests</option>
-                        <option value="50">41 - 50 Guests</option>
-                        <option value="70">51 - 70 Guests (Capacity Cap)</option>
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-brand-charcoal">Event Category *</label>
-                      <select 
-                        name="eventType" 
-                        value={formData.eventType}
-                        onChange={handleFormChange}
-                        className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal"
-                      >
-                        <option value="Birthday">Birthday Celebration</option>
-                        <option value="Baby Shower">Baby Shower / Gender Reveal</option>
-                        <option value="Wedding / Reception">Wedding / Small Reception</option>
-                        <option value="Private Dinner">Intimate Dinner / Anniversary</option>
-                        <option value="Other">Other Private Event</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-brand-charcoal">Additional Notes / Custom Requests</label>
-                    <textarea 
-                      name="message" 
-                      rows={4}
-                      value={formData.message}
-                      onChange={handleFormChange}
-                      placeholder="Share details about theme preferences, decoration items, or custom layouts..."
-                      className="w-full bg-white border border-brand-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary transition-all text-brand-charcoal resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full bg-brand-primary hover:bg-brand-primary-light text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Submit Reservation Inquiry</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
-            </motion.div>
           </div>
         </div>
       </section>
