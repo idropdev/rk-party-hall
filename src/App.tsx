@@ -556,14 +556,6 @@ export default function App() {
             initial="hidden"
             animate="visible"
           >
-            <motion.div 
-              className="inline-flex items-center gap-2 bg-brand-primary/5 border border-brand-primary/10 px-4 py-1.5 rounded-full text-brand-primary font-semibold text-xs tracking-wide uppercase"
-              variants={fadeIn}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-brand-primary" />
-              <span>West El Paso Event Venue</span>
-            </motion.div>
-
             <motion.h1 
               className="font-serif text-[clamp(2.3rem,5.5vw,4.2rem)] font-extrabold text-brand-primary leading-[1.1] tracking-tight"
               variants={fadeIn}
